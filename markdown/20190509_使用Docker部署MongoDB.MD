@@ -81,7 +81,7 @@ CONTAINER ID        IMAGE                  COMMAND                  CREATED     
 d2cec79f67e2        mongo-express:latest   "tini -- /docker-ent…"   18 minutes ago      Up 18 minutes       8081/tcp            mongodb_mongo-express.1.utv18p6if1pqdjs6ab93gbldl
 029472c4445c        mongo:latest           "docker-entrypoint.s…"   18 minutes ago      Up 18 minutes       27017/tcp           mongodb_mongo.1.pdjv597fnm2l8hkvp7q26amng
 ```
-然后就可以在浏览器http://127.0.0.1:8081/访问Mongo-Express了。
+然后就可以在浏览器[本地8081端口](http://127.0.0.1:8081/) 访问Mongo-Express了。
 此时应该可以看到3个`database`，分别叫*admin*, *config*和*local*。  
 但是现在整个mongo中只有一个用户，就是我们在配置文件中设置的*root*用户，一般来说我们肯定要创建一个普通用户，这一步需要在命令行中执行。  
 
