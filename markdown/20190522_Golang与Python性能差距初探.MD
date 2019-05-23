@@ -8,7 +8,7 @@
 
 ## Golang程序
 
-```
+```golang
 func sort_Select(li []int) {
 	minindex := 0 // 健壮性先不考虑
 	length := len(li)
@@ -53,7 +53,7 @@ def Sort_Select(li:list):
  | Python 1万  | 2.5秒 |
  | Python 5万  | 84.3秒,22.8M内存 |
  | Golang 10万  | 5.4秒 |
- | Python 20万  | 22.6秒,2.6M内存 |
+ | Golang 20万  | 22.6秒,2.6M内存 |
  
 根据选择排序算法的平方关系计算，`python`跑20万条需要1348秒，是`golang`的**59.68倍**。这个倍数与我之前看过的帖子里研究的差不多。
 emmmm…………
