@@ -24,9 +24,9 @@
 
 首先需要一个`Model`用于保存数据，然后需要一个`View`用于响应POST请求。  
 以我的项目为例，我先做了一个储存日志的功能：  
-![展示1:Admin列表页]()  
+![展示1:Admin列表页](https://github.com/Saodd/Saodd.github.io/raw/master/img/20190525_%E5%B1%95%E7%A4%BA1.png)  
 我可以在详情页中查看详细的日志数据：  
-![展示1:Admin详情页]()
+![展示1:Admin详情页](https://github.com/Saodd/Saodd.github.io/raw/master/img/20190525_%E5%B1%95%E7%A4%BA2.png)
 
 `Model`代码如下：
 ```python
