@@ -12,9 +12,15 @@
 <br>
 所以如何在不同容器之间进行通讯，是个值得思考的问题。  
 <br>
-之前有考虑过使用`socket`直接进行通讯，即在每个容器都监听一个端口，
+之前有考虑过使用[`socket`](https://github.com/Saodd/LewinTools/blob/master/lewintools/pro/socket.py)直接进行通讯，
+即在每个容器都监听一个端口，
 对传来的指令进行分析，然后按预设的方法去调用其他函数，并通过`socket`原路传回结果。  
 这个方法我觉得是可行的，但是最大的问题还是在于用户获取到结果以后，如何以适当的形式展现它？  
+<br>
+还考虑过一个方法就是使用`Mongo`+`Mongo-express`进行日志的储存和展现：  
+![展示3:Mongo-express列表页](https://github.com/Saodd/Saodd.github.io/raw/master/img/20190525_Mongo_List.png)  
+但是问题也是有的，日志全部挤在一行了：  
+![展示4:Mongo-express详情页](https://github.com/Saodd/Saodd.github.io/raw/master/img/20190525_Mongo_Detail.png)  
 <br>
 所以我想到了`Django`的Admin界面，它具有简单，大方，通过网页就可以直接操作数据库，
 并且将数据库转化为对象，易于开发等等优点。实在是居家旅行之必备。
