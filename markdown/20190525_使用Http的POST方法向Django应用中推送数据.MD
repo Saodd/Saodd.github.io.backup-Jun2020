@@ -77,7 +77,7 @@ class Log(generic.View):
         return HttpResponse("200 ok")
 ```
 特别注意：
-1. `csrf_exempt`是用来免除`CSRF`验证的（是Django默认的防御机制，还记不记得在表单中我们总是要加一行`{% csrf_token %}`?），
+1. `csrf_exempt`是用来免除`CSRF`验证的（是Django默认的防御机制，还记不记得在表单中我们总是要加一行`csrf_token`?），
 但是他只能用于函数；再配合`method_decorator`就可以用于类/对象方法了。但是要注意安全问题，不要轻易向外暴露这个Django项目。
 2. 我们使用`json`来传递数据，发送的时候用`json.dumps()`打包，接收的时候用`json.loads()`解包。
 3. 建立模型对象的时候要`somemodel(**data)`展开字典，不能像使用POST那样直接传入`somemodel(request.POST)`。
