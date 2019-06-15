@@ -1,4 +1,4 @@
-# Docker部署Nginx_uWSGI_Django一条龙
+# Docker部署Nginx uWSGI Django
 
 > 学习Django很久了，但是一直都是在其自带的测试服务上运行，今天来看看生产环境的部署。
 
@@ -46,7 +46,7 @@ $ docker exec -it mypython bash
 ```
 
 >这里要注意，最好构建一个net网络，这样有利于容器之间的互相访问。容器内部的python库的安装我也不说了。
-然后要挂载volume的话自己看着办。端口也自己随便选择。
+然后要挂载volume的话自己看着办。端口也自己随便选择(这里主要是为了直接测试uWSGI所以暴露了端口)。
 
 
 ### 配置uWSGI
@@ -66,7 +66,8 @@ root@容器# cd /path/to/your/django
 root@容器# uwsgi --http 0.0.0.0:20001 --module apdj.wsgi
 ```
 
-> 端口号一定要是你容器开放的端口号；module后面跟的是你的`WSGI.py`文件的路径，以python风格表示。
+> 端口号一定要是你容器开放的端口号，参数名http意思是在这个端口监听http请求；
+module后面跟的是你的`WSGI.py`文件的路径，以python风格表示。
 
 此时会输出一堆内容，像这样的：
 ```text
@@ -115,6 +116,9 @@ daemonize = （日志文件路径，先去创建好）
 disable-logging = true
 
 ```
+
+> 注意，是给`--socket`参数配置的端口号（之前是http），意思是在这个端口监听socket请求（nginx转发过来的）
+
 
 这样我们就可以简化启动命令了：
 
@@ -171,7 +175,7 @@ spawned uWSGI worker 2 (pid: 650, cores: 1)
 > 这里吐槽一下uWSGI的日志，我看见了一句：  
 Fri Jun 14 15:05:07 2019 - uWSGI worker 2 screams: UAAAAAAH my master disconnected: i will kill myself !!!  
 "2号苦工尖叫了起来：呜啊啊啊，我的主人抛弃我了，我要结束我的生命！！！"  
-笑死我了好吗！！！
+笑死我了好吗哈哈哈哈！！！
 
 然后再用浏览器测试一下，搞定！
 
@@ -208,7 +212,7 @@ server {
     # 这里转发所有的"/..."
     location / {   
         include  uwsgi_params;
-                 uwsgi_pass  python:20001;
+                 uwsgi_pass  mypython:20001;
     }
 
     # 这里转发所有的"/static"
@@ -241,7 +245,7 @@ Django ---  执行
 
 # 小结
 
-`Nginx`和`uWSGI`两个东西还是有点坑的，主要是提示很少，到处找日志很费力。
+`Nginx`和`uWSGI`两个东西还是有点小坑的，主要是提示很少，到处找日志很费力。
 
-现在他们二者之间还是使用TCPsocket进行通讯，其实还可以用Unixsocket性能更好，
+现在他们二者之间还是使用TCP-socket进行通讯，其实还可以用Unix-socket性能更好，
 但是由于我这里用的window系统好像不太支持，所以就先放一放吧。
