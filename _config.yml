@@ -17,9 +17,15 @@ author: true
 name: 'Lewin'
 NickName: 'Lewin'
 webtitle: 'Lewin的个人博客'
-bio: ''
+bio: '不想写前端的数据库不是一个好的后端'
 about: true
-aboutyou: '不想写前端的数据库不是一个好的后端'
+aboutyou: '
+ -- 毕业于某985本科工程专业，金融双学位；工作3年后毅然放弃在银行给处长厅长写材料的"铁饭碗"，
+投身于IT行业。只为追求儿时梦想。<br>
+ -- 在深圳某私募基金公司从事开发工作。<br>
+ -- 主要技能方向：Python数据分析，Web后端开发<br>
+ -- 目前学习方向：Golang，算法与数据结构，计算机基础
+'
 portraits: '/assets/profile.jpeg' # your portraits image file path
 
 # SNS
@@ -59,6 +65,7 @@ pygmentsTheme: 'default'
 
 # 友情链接
 friends:
+  Lewin的官方网站: 'https://www.lewinblog.com/'
   jekyll: 'https://www.jekyll.com.cn/'
 
 # 评论 最佳体验 在disqus、livere和Gitment之间三选一
