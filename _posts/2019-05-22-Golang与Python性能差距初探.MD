@@ -16,20 +16,20 @@ color: rgb(102,204,204)
 
 ```golang
 func sort_Select(li []int) {
-	minindex := 0 // 健壮性先不考虑
-	length := len(li)
-	var i, ii int
-	for i = range li {
-		minindex = i
-		// 在i之后的剩余部分中寻找最小值对应的位置
-		for ii = i + 1; ii < length; ii++ {
-			if li[ii] < li[minindex] {
-				minindex = ii
-			}
-		}
-		// 遍历完成后把最小值交换到i的位置
-		li[i], li[minindex] = li[minindex], li[i]
-	}
+    minindex := 0 // 健壮性先不考虑
+    length := len(li)
+    var i, ii int
+    for i = range li {
+        minindex = i
+        // 在i之后的剩余部分中寻找最小值对应的位置
+        for ii = i + 1; ii < length; ii++ {
+            if li[ii] < li[minindex] {
+                minindex = ii
+            }
+        }
+        // 遍历完成后把最小值交换到i的位置
+        li[i], li[minindex] = li[minindex], li[i]
+    }
 }
 ```
 
