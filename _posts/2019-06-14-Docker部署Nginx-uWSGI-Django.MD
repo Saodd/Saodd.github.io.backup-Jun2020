@@ -7,7 +7,7 @@ color: rgb(51,204,255)
 ---
 
 > 学习Django很久了，但是一直都是在其自带的测试服务器`manage.py runserver`上运行，今天来看看生产环境的部署。
-
+> 生产环境当然是首推Nginx了，
 
 
 
@@ -38,15 +38,12 @@ apdj
 ```
 
 
-
-
-
 ## 配置项目服务器uWSGI+Django
 
 首先构建一个python容器：
 
 ```bash
-$ docker run -dit --name mypython --net=some_net -p 20001:20001 python:latest
+$ docker run --name mypython --net=some_net -p 20001:20001 -dit python:latest
 $ docker exec -it mypython bash
 
 ```
@@ -60,7 +57,7 @@ $ docker exec -it mypython bash
 *安装*这里要特别注意，一定要从`pip`安装，有些教程让你从`apt`安装，会很麻烦。
 
 ```bash
-root@容器# python -m pip install uwsgi
+[root@容器]# python -m pip install uwsgi
 ```
 
 > 使用`python -m pip`可以给你指定的python版本安装。
@@ -68,8 +65,8 @@ root@容器# python -m pip install uwsgi
 安装完成后进入Django的项目目录，尝试运行一下：
 
 ```bash
-root@容器# cd /path/to/your/django
-root@容器# uwsgi --http 0.0.0.0:20001 --module apdj.wsgi
+[root@容器]# cd /path/to/your/django
+[root@容器]# uwsgi --http 0.0.0.0:20001 --module apdj.wsgi
 ```
 
 > 端口号一定要是你容器开放的端口号，参数名http意思是在这个端口监听http请求；
@@ -128,10 +125,10 @@ disable-logging = true
 
 这样我们就可以简化启动命令了：
 
-```bash
-// Ctrl+C结束上一个uwsgi进程
-// 还在刚才的路径下运行，否则要改成绝对路径
-root@容器# uwsgi uwsgi.ini
+```shell
+# Ctrl+C结束上一个uwsgi进程
+# 还在刚才的路径下运行,否则要改成绝对路径
+[root@容器]# uwsgi uwsgi.ini
 ```
 
 这样只会给出一条提示：
@@ -195,7 +192,7 @@ Fri Jun 14 15:05:07 2019 - uWSGI worker 2 screams: UAAAAAAH my master disconnect
 ## 配置Nginx
 
 Nginx运行在另一个容器中：
-```bash
+```shell
 $ docker run --net=somenet --name mynginx -p 8080:80 -d nginx
 ```
 
@@ -229,12 +226,12 @@ server {
 }
 ```
 覆盖了原来的文件之后，我们重启一下Nginx:
-```bash
-// 在宿主机
+```shell
+# 在宿主机
 $ docker restart mynginx
 
-// 或者在容器内部操作，不过最后你还是要出来重启的
-root@容器# service nginx restart
+# 或者在容器内部操作，不过最后你还是要出来重启的
+[root@容器]# service nginx restart
 
 ```
 
@@ -248,11 +245,74 @@ uWSGI  -->  把请求分配给空闲的worker
 Django ---  执行
 ```
 
+## 进阶：使用Unix-Socket
 
+现在`Nginx`与`uWSGI`之间还是使用TCP-socket进行通讯，其实还可以用Unix-socket性能更好。
+
+修改`uwsgi.ini`文件:
+
+```ini
+[uwsgi]
+chdir = /scripts/APMOS/apmos4_view/apdj
+module = apdj.wsgi:application
+socket = /docker/uwsgi.sock    # 改这里！注意，这里是python容器中的路径，要从宿主机挂载进来
+master = true
+workers = 2
+daemonize = （日志文件路径，先去创建好）
+disable-logging = true
+
+```
+
+对应的，修改`Nginx`的配置文件：
+
+```text
+    # 这里转发所有的"/..."
+    location / {   
+        include  uwsgi_params;
+                 uwsgi_pass  unix:///docker/uwsgi.sock;  # 改这里！注意，这里是nginx容器中的路径，要从宿主机挂载进来
+    }
+
+```
+
+实质就是通过文件系统来连接套接字。所以我们也要相应的**重启两个容器**，并挂载同一个目录进去：
+
+```shell
+$ docker run ... -v /docker/:/docker/ ...
+# 前面一个/docker/是宿主机的目录，后面/docker/是容器内的目录
+```
+
+重启之后，尝试访问网页，成功！
+并且我们可以在`uWSGI`容器内找到之前定义的日志文件，可以看到这样一行：
+
+```text
+uwsgi socket 0 bound to UNIX address /docker/uwsgi.sock fd 3
+```
+
+但是要注意，使用Unix-Socket虽然性能会好一些，不过也大大地降低了可维护性和可拓展性，
+以我个人经验来看，如果不是特别需要的话，还是不要用了。
+
+## 进阶：使用`.pid`文件管理uWSGI进程
+
+修改`uwsgi.ini`文件，增加一行:
+
+```ini
+pidfile=/scripts/uwsgi.pid
+stats=/scripts/uwsgi.status
+```
+
+这样就会把`uWSGI`的进程信息写入这个文件中，我们可以通过这个文件便捷地管理`uWSGI`进程。
+
+```shell
+# 查看状态
+[root@container]# uwsgi --connect-and-read /scripts/uwsgi.status
+
+# 重启/关闭
+[root@container]# uwsgi --reload /scripts/uwsgi.pid
+[root@container]# uwsgi --stop /scripts/uwsgi.pid
+
+```
 
 # 小结
 
-`Nginx`和`uWSGI`两个东西还是有点小坑的，主要是提示很少，到处找日志很费力。
+`Nginx`和`uWSGI`两个东西还是有点小坑的，不过经历了一遍就好了，其实也并不难。
 
-现在他们二者之间还是使用TCP-socket进行通讯，其实还可以用Unix-socket性能更好，
-但是由于我这里用的window系统好像不太支持，所以就先放一放吧。
