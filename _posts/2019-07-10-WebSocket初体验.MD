@@ -10,7 +10,7 @@ color: rgb(255,204,255)
 > 之前用Go+TCPsocket实现过控制台版本，不过在控制台上体验很差。
 > 今天来看一下Go+JS+Websocket是否能够实现预期的结果。
 
-## 先看一下Golang的实现
+## 先看`Go`+`TCPsocket`实现的聊天室
 
 主要逻辑很简单，采用典型的C/S结构，服务器监听端口，将所有的客户端连接都保存在`map`里，
 当有任意客户端发送消息来了，服务端就遍历所有的活动连接，把消息广播出去。
@@ -253,46 +253,48 @@ Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
 var ws = new WebSocket("wss://192.168.1.213:9999");
 ```
 
-## 初步实现：Websocket的建立
+## 初步实现：`net/websocket`包的使用
 
-那么我们开始进入主题。首先来试一下这个方案是否可行。
+那么我们开始进入主题。前面是用`http`包建立的简陋服务器，
+接下来我们首先来看一下`net/websocket`是否好用。
+我们写一个最基本服务器端，功能是建立`websocket`后，将客户端所有的消息打印出来：
 
 ```golang
 package learnWeb
 
 import (
-	"fmt"
-	"golang.org/x/net/websocket"
-	"net/http"
+    "fmt"
+    "golang.org/x/net/websocket"
+    "net/http"
 )
 
 func Main_WebSocketServer() {
-	http.Handle("/echo", websocket.Handler(wssHandler))
-	http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
-		http.ServeFile(writer,request,"C:/Users/lewin/github/Learning/Golang/src/learnWeb/20190710-WebSocketClient.html")
-	})
-	http.ListenAndServe("0.0.0.0:9999",nil)
+    http.Handle("/echo", websocket.Handler(wssHandler))
+    http.HandleFunc("/", func(writer http.ResponseWriter, request *http.Request) {
+        http.ServeFile(writer,request,"C:/Users/lewin/github/Learning/Golang/src/learnWeb/20190710-WebSocketClient.html")
+    })
+    http.ListenAndServe("0.0.0.0:9999",nil)
 }
 
 func wssHandler(conn *websocket.Conn)  {
-	fmt.Println("connect +1 ")
-	defer func() {
-		fmt.Println("connect closed: ")
+    fmt.Println("connect +1 ")
+    defer func() {
+        fmt.Println("connect closed: ")
     }()
     
-	rec := make([]byte, 4096)
-	var n int
-	var err error
-	for {
-		n, err = conn.Read(rec)
-		if err != nil {
-			break
-		}
-		if n > 0 {
-			fmt.Println(string(rec[:n]))
-			wssBroadcast(rec[:n])
-		}
-	}
+    rec := make([]byte, 4096)
+    var n int
+    var err error
+    for {
+        n, err = conn.Read(rec)
+        if err != nil {
+            break
+        }
+        if n > 0 {
+            fmt.Println(string(rec[:n]))
+            wssBroadcast(rec[:n])
+        }
+    }
 }
 ```
 
@@ -341,30 +343,310 @@ func wssHandler(conn *websocket.Conn)  {
 ```
 
 配合上面这个html页面，我们就可以确认前端与后端的Websocket是否连接正常。
-接下来我们可以开始完善业务逻辑了。
+
+## 升级`gin-gonic/gin`+`gorilla/websocket`的技术组合
+
+我们一般要写api的话，首先想到的应该是`gin`之类的框架吧，功能比较多，有备无患嘛。
+但`gin`本身是没有`websocket`的处理机制的，所以我们引入另一个专业的框架`gorilla/websocket`。
+这次我们写一个复读机服务器：
+
+路由部分（其实主页面我用`Django`实现了，不过还是把这部分贴出来便于理解）：
+
+```golang
+{
+    g := root.Group("/chatroom")
+    {
+        g.GET("", chatroom.Hall)
+        g.GET("/ws", chatroom.WebSocket)
+    }
+}
+```
+
+控制部分：
+
+```golang
+package chatroom
+
+import (
+    "fmt"
+    "github.com/gin-gonic/gin"
+    "github.com/gorilla/websocket"
+    "net/http"
+)
+
+var upgrader = websocket.Upgrader{
+    ReadBufferSize:  1024,
+    WriteBufferSize: 1024,
+    CheckOrigin: func (r *http.Request) bool { // 一定要这个函数，否则报错
+        return true
+    },
+}
+
+func Hall(ctx *gin.Context) {  // 聊天室大厅页面
+    ctx.HTML(http.StatusOK, "chatroom.html", nil)
+}
+
+func WebSocket(ctx *gin.Context) {  // websocket响应
+    conn, _ := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+    wsHandler(conn)
+}
+
+func wsHandler(conn *websocket.Conn) {
+    fmt.Println("connect +1 ")
+    defer func() {
+        fmt.Println("connect closed: ")
+    }()
+
+    for {
+        msgType, msg, err := conn.ReadMessage()
+        if err != nil {
+            break
+        }
+        // Print the message to the console
+        fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
+
+        // Write message back to browser
+        if err = conn.WriteMessage(msgType, msg); err != nil {
+            return
+        }
+    }
+}
+```
+
+实现效果：
+
+![复读机版本效果图](/screenshot/2019-07-10-WebSocket-SimpleEcho.png)
+
+
 
 ## 完善聊天业务逻辑
 
-### 保存用户信息(更新中)
+### 同时服务多位在线用户
 
-那首先我们要设立一个用户列表，这样才能实现广播。用一个`map`就好了，用户名作为key，socket作value。
+既然要面对多个用户，那我们在建立连接的时候就分别使用`Go程`来单独监听：
 
 ```golang
-var wssConnmap map[string]*websocket.Conn
+func WebSocket(ctx *gin.Context) {
+    conn, _ := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+    go wsListener(conn) // 启动
+}
+
+func wsListener(conn *websocket.Conn) {
+    fmt.Println("connect: ", conn.RemoteAddr())
+    broadcaster.add(conn)
+    defer func() {
+        fmt.Println("stop: ", conn.RemoteAddr())
+        broadcaster.del(conn)
+    }()
+
+    for {
+        _, msg, err := conn.ReadMessage()
+        if err != nil { // 客户端断开连接后会跳出
+            break
+        }
+        broadcaster.msgChan <- msg // 消息存入带缓存的chan中
+    }
+}
 ```
 
+我们把收到的消息存入（带缓存的）的`chan`中，以保证一定的性能，
+而`broadcaster`是一个由单独`Go程`运行的广播员，负责从`chan`中读取消息，然后广播出去。
 
+```golang
+var broadcaster = &broadCaster{msgChan: make(chan []byte, 10), wsConns: make(map[net.Addr]*websocket.Conn)}
 
+type broadCaster struct {
+    msgChan chan []byte
+    wsConns map[net.Addr]*websocket.Conn
+    lock    sync.Mutex
+}
 
+func (self *broadCaster) add(conn *websocket.Conn) {
+    self.lock.Lock()
+    self.wsConns[conn.RemoteAddr()] = conn
+    self.lock.Unlock()
+}
 
+func (self *broadCaster) del(conn *websocket.Conn) {
+    self.lock.Lock()
+    delete(self.wsConns, conn.RemoteAddr())
+    self.lock.Unlock()
+}
 
+func (self *broadCaster) say() {
+    for {
+        msg := <-self.msgChan
+        self.lock.Lock()
+        for _,conn := range self.wsConns{
+            e := conn.WriteMessage(1, msg)
+            if e !=nil{
+                fmt.Println("Failed sending to: ", conn.RemoteAddr(), " | Err: ", e)
+            }
+        }
+        self.lock.Unlock()
+    }
+}
 
+func init() { // 使用init实现单例模式
+    go broadcaster.say()
+}
 
+```
 
+### 用户身份验证系统
 
+我们知道`gin`有一个`BasicAuth`中间件，可以实现简单的用户认证功能。
+但是我这个网站的主体还是`Django`，其中有一个自己写的用户认证中间件，虽然代码不多，但是功能强大。
+然后二者之间要协作，肯定需要一个中间人了，我选择`Redis`。
 
+我的思路是：
 
+1. 聊天室主要页面建立在`Django`上。
+2. 通过`Django`的逻辑生成`token`，一份附在js代码中送给客户，一份存入服务器的`Redis`数据库供查验。
+3. 聊天室主要页面通过调用js代码，与`gin`建立`websocket`连接。
 
+#### 生成`token`
+
+这部分是在`python`环境下完成的：
+
+```python
+@wrap_login_required  # 在装饰器内，利用session核验身份
+def chatRoom(request: WSGIRequest):
+    # 生成token并存入数据库
+    userName = request.session.get("user_name", "")
+    chatToken = 生成密码()
+    rd = redis.Redis(connection_pool=RedisPool)
+    rd.set("ChatroomToken" + userName, chatToken, ex=300)
+    # 把token代入HTML模板中
+    return render(request, "appDevelop/chatroom.html", {"chatToken": chatToken, "userName": userName})
+```
+
+#### 使用`token`建立连接
+
+这部分是`golang`环境的工作，先修改`路由`：
+
+```golang
+{
+    g = root.Group("/chatroom")
+    {
+        g.GET("", chatroom.Hall)
+        g.GET("/ws/:name/:token", chatroom.WebSocket)  // 改这里，识别参数
+    }
+}
+```
+
+然后修改`Handler`：
+
+```golang
+func WebSocket(ctx *gin.Context) {
+    // 从url中读取参数
+    token := ctx.Param("token")
+    name := ctx.Param("name")
+    // 从Redis中读取，并对比
+    token2, err := rd.Get("ChatroomToken"+name).Result()
+    if err == redis.Nil || token!=token2 {
+        ctx.String(403,"token wrong.")
+        return
+    } else if err != nil {
+        ctx.Status(500)
+        fmt.Println(err)
+        return
+    }
+    // 这些部分不用改
+    conn, _ := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+    go wsListener(conn)
+}
+```
+
+实现效果：
+
+![UserModule1](/screenshot/2019-07-10-WebSocket-UserModule1.png)
+![UserModule2](/screenshot/2019-07-10-WebSocket-UserModule2.png)
+
+### 前端美化，增加用户名，部署到生产环境（Nginx代理）
+
+`Nginx`代理配置：
+
+```conf
+location /gin {
+        proxy_pass http://bloggin:9999;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+```
+
+`html`部分代码：
+
+```html
+<div class="container" style="min-height: 100%">
+
+        <textarea class="col-12" id="output" rows="25" readonly="readonly"></textarea>
+
+        <textarea class="form-control col-11" id="input" rows="6" onkeyup="keySend();"
+                  style="position: relative;"></textarea>
+        <button class="float-right" id="buttonSend" onclick="send()">Send</button>
+    </div>
+<script>
+        var input = document.getElementById("input");
+        var output = document.getElementById("output");
+        var wss = new WebSocket("ws://www.lewinblog.com/gin/chatroom/ws/{{ userName }}/{{ chatToken }}");
+
+        wss.onopen = function (evt) {
+            output.value += "[提示] 成功连接服务器\n";
+            output.scrollTop = output.scrollHeight
+        };
+
+        wss.onmessage = function (evt) {
+            output.value += evt.data + "\n";
+            output.scrollTop = output.scrollHeight
+        };
+
+        wss.onclose = function (evt) {
+            output.value += "[提示] 与服务器断开连接，请刷新……\n";
+            output.scrollTop = output.scrollHeight
+        };
+
+        function send() {
+            wss.send(input.value);
+            input.value = "";
+        }
+
+        function keySend() {
+            if (event.keyCode == 13)  //回车键的键值为13
+                buttonSend.click();
+        }
+    </script>
+```
+
+最终效果：
+
+![Fianl Version](/screenshot/2019-07-10-WebSocket-FinalVersion.png)
+
+## 收获&不足
+
+1. 整体来说这是一个很综合性的项目。前端涉及`html`/`css`/`js`/`Bootstrap`/`jQuery`等诸多技术，
+后端是`Nginx`+`uWSGI+Django`+`Gin`三大模块，把它们糅合在一起有点费劲，但是也的确学到很多东西。
+2. `Nginx`还有很多配置选项还没有完全弄懂，感觉很多是涉及到http协议的东西，不是纯粹的编程逻辑了。
+3. 网站的主体我目前觉得还是`Django`更强大一些，毕竟发展那么久，用户那么多，
+再加上动态脚本语言的特性，所以依然是`Web`应用的最佳选择。
+4. `Golang`的部署真的超方便，真的是丢一个`.exe`到服务器就ok了。所以坚决地抛弃各种模板文件，
+只把它用作纯api服务，才能最大限度地发挥它这项特长。
+5. `Golang`令人称道的工程管理优势，今天觉得感觉一般。当业务逻辑复杂了之后，
+依然会出现各种问题，它还是不能从根本上杜绝这些问题。
+
+就这个项目来说，其实还有很多未完善之处：
+
+1. 最明显的是掉线的问题了。还不清楚是`Websocket`本身的问题还是网络波动的问题，连接并不算很稳定。
+掉线期间可能会有消息丢失，目前没有做检测、重连、重发的机制。
+2. 用户信息太简单。写代码的时候偷懒，直接用`map[net.Addr]*websocket.Conn`储存用户信息，
+导致后期想拓展都不太容易了。所以以后涉及到这类数据，都提早建立好`struct`才比较容易拓展吧。
+3. `Redis`在`Golang`中的包，没有连接池`ConnectionPool`的概念。到底是不在乎？还是没必要？
+还是真的没实现出来？这个问题暂时不得而知。
 
 ## 参考文献
 
