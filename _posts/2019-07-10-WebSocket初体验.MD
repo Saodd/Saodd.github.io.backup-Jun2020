@@ -623,6 +623,15 @@ location /gin {
     </script>
 ```
 
+在Windows上交叉编译Linux：
+
+```shell
+PS > SET CGO_ENABLED=0
+PS > SET GOOS=linux
+PS > SET GOARCH=amd64
+PS > go build BlogGin.go
+```
+
 最终效果：
 
 ![Fianl Version](/screenshot/2019-07-10-WebSocket-FinalVersion.png)
