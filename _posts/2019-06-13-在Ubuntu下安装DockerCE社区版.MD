@@ -2,7 +2,7 @@
 layout: post
 title:  "在Ubuntu下安装DockerCE社区版"
 date:   2019-06-13
-tags: Docker Ubuntu
+tags: Docker Linux
 color: rgb(255,102,51)
 ---
 

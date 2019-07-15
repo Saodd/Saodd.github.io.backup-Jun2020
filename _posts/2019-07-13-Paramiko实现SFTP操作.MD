@@ -13,11 +13,17 @@ color: rgb(255,204,51)
 
 公司要每天从另一家公司下载数据，对方提供了一个sftp环境供我们下载。
 
-但这次给的是**账号+密码**的形式，而不是密钥的形式，所以传统的`shell`+`sftp`组合不好使了。
+但这次给的是**账号+密码**的形式，而不是密钥文件的形式，所以传统的`shell`+`sftp`组合不好使了。
+所以我们这次用python脚本来替代shell。
 
 ## 实现
 
-按照以往的经验来考虑，我们要实现一个命令行参数指定日期的功能。
+按照以往的经验来考虑，我们要实现一个命令行参数指定日期的功能。类似于这种感觉：
+
+```shell
+$ python xxxsftp.py --since 20190710 --today 20190713
+```
+
 在此思想指导下，完成主体逻辑部分：
 
 ```python
@@ -33,7 +39,7 @@ def Main(since: datetime, today: datetime):
         with paramiko.SFTPClient.from_transport(transport) as sftp:
             while since <= today:
                 doGET(since, sftp)
-                since += timedelta(1)
+                since += timedelta(1)ya
 
 # 主体逻辑部分
 def doGET(today: datetime, sftp: paramiko.SFTPClient):
