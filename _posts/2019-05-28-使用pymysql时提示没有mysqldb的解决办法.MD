@@ -9,8 +9,11 @@ subtitle: "报错: ModuleNotFoundError: No module named 'MySQLdb'"
 
 > 在我的windows上运行sqlalchemy一切正常，但是进入到`python容器`(linux环境)中运行就报错。
 
+## 报错情况
+
 运行`sqlalchemy`时报错：
-```
+
+```shell
 root@2492dd2ac42b:/scripts/APMOS# python somepython.py
 Traceback (most recent call last):
   ...
@@ -25,8 +28,11 @@ Traceback (most recent call last):
 ModuleNotFoundError: No module named 'MySQLdb'
 ```
 
+## 尝试解决
+
 按理说我这个官方的python镜像应当非常健康才对，检查python环境：
-```
+
+```shell
 root@2492dd2ac42b:/scripts/APMOS/apmos2_etls/DBtools# pip list
 Package         Version
 --------------- ---------
@@ -56,21 +62,24 @@ XlsxWriter      1.1.8
 ```
 
 尝试安装`mysqldb`：
-```
+
+```shell
 root@2492dd2ac42b:/scripts/APMOS# pip install mysqldb
 Collecting mysqldb
   ERROR: Could not find a version that satisfies the requirement mysqldb (from versions: none)
 ERROR: No matching distribution found for mysqldb
 ```
 
-竟然提示没有`mysqldb`这个包！  
+竟然提示没有`mysqldb`这个包！
+
 [搜索一番](https://www.pythonanywhere.com/forums/topic/1212/)得出答案：  
 
 > the correct pip package for Python 3.x has changed since the last update on this thread. 
 If you're using a virtualenv with Python 3, you can install it like this:
 
 对于python3正确解决办法是：
-```
+
+```shell
 pip install mysqlclient
 ```
 

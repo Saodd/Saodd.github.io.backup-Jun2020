@@ -153,7 +153,7 @@ WebSocket 协议在2008年诞生，2011年成为国际标准。所有浏览器�
 
 所以这种两种需求相加，自然就会催生出一种既有类似于Socket的效率，又像http那样兼容丰富的技术，那就是Websocket了。
 
-![WebSocket结构图](/screenshot/2019-07-10-WebSocket-Structure.jpg)
+![WebSocket结构图](/static/blog/2019-07-10-WebSocket-Structure.jpg)
 
 ### WebSocket 数据帧结构
 
@@ -415,7 +415,7 @@ func wsHandler(conn *websocket.Conn) {
 
 实现效果：
 
-![复读机版本效果图](/screenshot/2019-07-10-WebSocket-SimpleEcho.png)
+![复读机版本效果图](/static/blog/2019-07-10-WebSocket-SimpleEcho.png)
 
 
 
@@ -560,8 +560,8 @@ func WebSocket(ctx *gin.Context) {
 
 实现效果：
 
-![UserModule1](/screenshot/2019-07-10-WebSocket-UserModule1.png)
-![UserModule2](/screenshot/2019-07-10-WebSocket-UserModule2.png)
+![UserModule1](/static/blog/2019-07-10-WebSocket-UserModule1.png)
+![UserModule2](/static/blog/2019-07-10-WebSocket-UserModule2.png)
 
 ### 前端美化，增加用户名，部署到生产环境（Nginx代理）
 
@@ -634,7 +634,7 @@ PS > go build BlogGin.go
 
 最终效果：
 
-![Fianl Version](/screenshot/2019-07-10-WebSocket-FinalVersion.png)
+![Fianl Version](/static/blog/2019-07-10-WebSocket-FinalVersion.png)
 
 ## 收获&不足
 
