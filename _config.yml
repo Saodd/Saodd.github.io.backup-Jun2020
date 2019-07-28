@@ -20,13 +20,14 @@ webtitle: 'Lewin的个人博客'
 bio: '不想写前端的数据库不是一个好的后端'
 about: true
 aboutyou: '
- -- 毕业于某985统招本科工程专业，金融双学位；工作3年后毅然放弃在银行给处长厅长写材料的"铁饭碗"，
+ -- 毕业于某985统招本科工程/金融专业；工作3年后毅然放弃在银行给处长厅长写材料的"铁饭碗"，
 投身于IT行业。只为追求儿时梦想。<br>
  -- 目前就职于：深圳 · 某私募基金公司<br>
- -- 主要技能：Python数据分析，自动化工具，Web后端开发<br>
- -- 次要技能：数据库，Web前端，Docker<br>
- -- 学习方向：Golang，算法与数据结构，计算机基础<br>
- -- 其他技能：CET6/TOFEL全英文工作能力，证券/期货/基金从业资格
+ -- 求职意向：Python/Go后端工程师
+ -- 熟练技能：Python(Pandas, Django), Golang(Gin)<br>
+ -- 次要技能：数据库(Mysql, Redis, Mongo), Web前端(Bootstrap), Docker<br>
+ -- 学习方向：算法与数据结构，计算机基础<br>
+ -- 其他技能：全英文工作能力(CET6/TOFEL90+)，证券/期货/基金从业资格
 '
 portraits: '/assets/profile.jpeg' # your portraits image file path
 
