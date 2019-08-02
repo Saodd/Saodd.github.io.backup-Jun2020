@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "如何让Docker容器正常打印Python的日志"
+title:  "[转载]如何让Docker容器正常打印Python的日志"
 date:   2019-08-01
 tags: Docker 
 color: rgb(102,204,255)
@@ -38,5 +38,18 @@ color: rgb(102,204,255)
 
 ## 小结
 
-亲测有效。Docker真的坑啊……话说回来，觉得我接触的好几个Google体系的东西，都感觉特别坑。
-不是有多难，而是出了问题都找不到原因在哪的。真的很烦。
+亲测有效。其实一开始我自己也想到了是缓存的问题，但是我尝试`sys.stdout.write()`+`sys.stdout.flush()`都不管用，很奇怪，有待继续探究。
+
+一些细节再说一下：
+
+```python
+# 使用logging要先实例化
+logger = logging.getLogger("django")
+logger.info("你想打印的内容")
+```
+
+```yaml
+# stack-yaml 文件不支持env参数，需要使用：
+environment:
+    PYTHONUNBUFFERED: 0
+```

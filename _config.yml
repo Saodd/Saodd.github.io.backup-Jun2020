@@ -24,8 +24,8 @@ aboutyou: '
 投身于IT行业。只为追求儿时梦想。<br>
  -- 目前就职于：深圳 · 某私募基金公司<br>
  -- 求职意向：Python/Go后端工程师
- -- 熟练技能：Python(Pandas, Django), Golang(Gin)<br>
- -- 次要技能：数据库(Mysql, Redis, Mongo), Web前端(Bootstrap), Docker<br>
+ -- 熟练技能：Python(Pandas, Django), Docker<br>
+ -- 次要技能：Golang(Gin), 数据库(Mysql, Redis, Mongo), Web前端(Bootstrap)<br>
  -- 学习方向：算法与数据结构，计算机基础<br>
  -- 其他技能：全英文工作能力(CET6/TOFEL90+)，证券/期货/基金从业资格
 '
@@ -68,7 +68,7 @@ pygmentsTheme: 'default'
 
 # 友情链接
 friends:
-  Lewin的官方网站: "https://www.lewinblog.com/"
+  Lewin的个人网站: "https://www.lewinblog.com/"
   # jekyll: 'https://www.jekyll.com.cn/'
 
 # 评论 最佳体验 在disqus、livere和Gitment之间三选一
