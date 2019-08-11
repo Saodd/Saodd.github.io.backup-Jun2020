@@ -2,7 +2,7 @@
 layout: post
 title:  "Windows配置Clion环境"
 date:   2019-08-09
-tags: C/C++
+tags: C
 color: rgb(0,102,204)
 ---
 
