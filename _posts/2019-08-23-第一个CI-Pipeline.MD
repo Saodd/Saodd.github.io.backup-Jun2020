@@ -97,7 +97,7 @@ docker run -d --name gitlab-runner --restart always \
 
 ## 安排测试脚本
 
-我们写一段单元测试代码，保存为`SEHK_Short_Report.py`：
+我们写一段单元测试代码，保存为`_test/SEHK_Short_Report.py`：
 
 ```python
 import os
@@ -108,9 +108,15 @@ import logging
 from Broker_APMOS.OtherTools import SEHK_Short_Report
 
 class MyTestCase(unittest.TestCase):
-    def test_something(self):
-        SEHK_Short_Report.logger.setLevel(logging.WARNING)
-        SEHK_Short_Report.main()
+    def test__main__got_none(self):
+        dfs = SEHK_Short_Report.main("2000-01-01")
+        self.assertEqual(len(dfs["ARF"]), 0)
+        self.assertEqual(len(dfs["APC"]), 0)
+
+    def test__main__given_date(self):
+        dfs = SEHK_Short_Report.main("2019-08-24")
+        self.assertEqual(len(dfs["ARF"]), 1)
+        self.assertEqual(len(dfs["APC"]), 1)
 
 if __name__ == '__main__':
     unittest.main()
@@ -122,7 +128,8 @@ if __name__ == '__main__':
 image: appython:0001
 
 variables:
-  AP_DEBUG: 1
+  AP_ENV: "test"
+  AP_LOG: "warning"
 
 SEHK_Short_Report:
   script:
