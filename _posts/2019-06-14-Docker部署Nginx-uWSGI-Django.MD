@@ -2,7 +2,7 @@
 layout: post
 title:  "使用Docker部署Nginx uWSGI Django"
 date:   2019-06-14
-tags: Docker Nginx
+tags: Docker Web
 color: rgb(51,204,255)
 ---
 

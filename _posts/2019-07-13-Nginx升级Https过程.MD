@@ -2,7 +2,7 @@
 layout: post
 title:  "Nginx升级Https过程"
 date:   2019-07-13
-tags: Web应用
+tags: Web
 color: rgb(255,204,255)
 ---
 

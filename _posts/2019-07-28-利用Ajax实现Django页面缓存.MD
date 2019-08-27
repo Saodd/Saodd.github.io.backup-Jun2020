@@ -2,7 +2,7 @@
 layout: post
 title:  "利用Ajax实现Django页面缓存"
 date:   2019-07-28
-tags: Django Web应用
+tags: Django Web
 color: rgb(0,51,0)
 ---
 

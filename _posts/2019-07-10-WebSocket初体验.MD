@@ -2,7 +2,7 @@
 layout: post
 title:  "WebSocket初体验——网页聊天室"
 date:   2019-07-10
-tags: Web应用
+tags: Web
 color: rgb(255,204,255)
 ---
 
