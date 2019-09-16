@@ -626,10 +626,11 @@ location /gin {
 在Windows上交叉编译Linux：
 
 ```shell
-PS > SET CGO_ENABLED=0
-PS > SET GOOS=linux
-PS > SET GOARCH=amd64
-PS > go build BlogGin.go
+# PowerShell环境
+SET CGO_ENABLED=0
+SET GOOS=linux
+SET GOARCH=amd64
+go build BlogGin.go
 ```
 
 最终效果：
