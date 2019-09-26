@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "[官方] Using Go Modules"
-date:   2019-09-26
+date:   2019-09-25
 tags: Golang
 color: rgb(102,204,204)
 ---
