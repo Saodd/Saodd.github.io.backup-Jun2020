@@ -8,7 +8,7 @@ color: rgb(102,204,204)
 
 > 发布时间2019-08-21，接着上一篇，讲一下如何将现有的项目迁移到GoModules中。
 
-# Using Go Modules
+# Migrating to Go Modules
 
 [原始链接](https://blog.golang.org/migrating-to-go-modules)
 
