@@ -2,7 +2,7 @@
 layout: post
 title:  "实战项目：使用Gitlab-CI部署C++项目"
 date:   2019-09-25
-tags: DevOps
+tags: DevOps C
 color: rgb(255,204,51)
 ---
 
