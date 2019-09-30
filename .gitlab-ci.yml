@@ -1,0 +1,13 @@
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - docker rm -f CI-lewinblog-baseimage-ruby || true
+    - "docker run --name CI-lewinblog-baseimage-ruby \
+      -v $(pwd):/tmp/saodd/
+      -d registry.gitlab.com/lewinblog/baseimage/ruby:v264.0 bash -c \
+      'mkdir -p /prod/static/ && cp -rf /tmp/saodd/static/blog/ /prod/static/' "
+    - docker commit CI-lewinblog-baseimage-ruby registry.gitlab.com/saodd/saodd-github-io/prod:latest
+    - docker rm -f CI-lewinblog-baseimage-ruby || true
