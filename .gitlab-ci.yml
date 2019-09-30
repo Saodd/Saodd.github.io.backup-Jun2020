@@ -15,7 +15,5 @@ build:
 markdown:
   stage: build
   script:
-    - "docker run --rm \
-      -v $(pwd)/_posts/:/py/Saodd.github.io/_posts:ro \
-      registry.gitlab.com/lewinblog/blogdj/prod:latest \
-      python ./appBlogpage/make_md.py"
+    - "docker exec -it $(docker ps |grep blog_dj | awk '{print $1}') \
+      bash -c 'python appBlogpage/make_md.py' "
