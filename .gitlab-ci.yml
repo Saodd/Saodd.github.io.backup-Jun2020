@@ -1,23 +1,16 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
 stages:
   - build
 
-build:
+build_register:
   stage: build
   script:
-    - docker rm -f CI-lewinblog-baseimage-ruby || true
-    - "docker run --name CI-lewinblog-baseimage-ruby \
-      -v $(pwd):/tmp/saodd/
-      -d registry.gitlab.com/lewinblog/baseimage/ruby:v264.0 bash -c \
-      'mkdir -p /prod/static/ && cp -rf /tmp/saodd/static/blog/ /prod/static/' "
-    - docker commit CI-lewinblog-baseimage-ruby registry.gitlab.com/saodd/saodd-github-io/prod:latest
-    - docker rm -f CI-lewinblog-baseimage-ruby || true
-
-markdown:
-  stage: build
-  script:
-    - "docker run --rm \
-      -v $(pwd)/_posts:/py/Saodd.github.io/_posts:ro \
-      --net blog_web \
-      registry.gitlab.com/lewinblog/blogdj/prod:latest \
-      bash -c 'python appBlogpage/make_md.py' "
-      
+    - cd register
+    - docker build -t registry.gitlab.com/saodd/saodd-github-io/register:v1.0 .
+    - docker push registry.gitlab.com/saodd/saodd-github-io/register:v1.0
+    - docker tag registry.gitlab.com/saodd/saodd-github-io/register:v1.0 registry.gitlab.com/saodd/saodd-github-io/register:latest
+    - docker push registry.gitlab.com/saodd/saodd-github-io/register:latest
