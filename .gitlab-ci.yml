@@ -5,6 +5,7 @@ services:
 
 stages:
   - build
+  - package
 
 build_register:
   stage: build
@@ -15,3 +16,11 @@ build_register:
     - docker push registry.gitlab.com/saodd/saodd-github-io/register:v1.0
     - docker tag registry.gitlab.com/saodd/saodd-github-io/register:v1.0 registry.gitlab.com/saodd/saodd-github-io/register:latest
     - docker push registry.gitlab.com/saodd/saodd-github-io/register:latest
+  when: manual
+
+package_nginx:
+  stage: package
+  script:
+    - docker login registry.gitlab.com -u lewin -p $GITLAB_TOKEN
+    - docker build -t registry.gitlab.com/saodd/saodd-github-io/prod:latest .
+    - docker push registry.gitlab.com/saodd/saodd-github-io/prod:latest
