@@ -12,9 +12,9 @@ build_register:
   script:
     - docker login registry.gitlab.com -u lewin -p $GITLAB_TOKEN
     - cd register
-    - docker build -t registry.gitlab.com/saodd/saodd-github-io/register:v1.0 .
-    - docker push registry.gitlab.com/saodd/saodd-github-io/register:v1.0
-    - docker tag registry.gitlab.com/saodd/saodd-github-io/register:v1.0 registry.gitlab.com/saodd/saodd-github-io/register:latest
+    - docker build -t registry.gitlab.com/saodd/saodd-github-io/register:v1.1 .
+    - docker push registry.gitlab.com/saodd/saodd-github-io/register:v1.1
+    - docker tag registry.gitlab.com/saodd/saodd-github-io/register:v1.1 registry.gitlab.com/saodd/saodd-github-io/register:latest
     - docker push registry.gitlab.com/saodd/saodd-github-io/register:latest
   when: manual
 

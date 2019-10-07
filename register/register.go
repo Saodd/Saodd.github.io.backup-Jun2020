@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const PostPath = "../_posts"
+const PostPath = "/usr/share/nginx/html/static/posts"
 
 type postMeta struct {
 	FileName string
@@ -46,7 +46,7 @@ func readDir() []*postMeta {
 		log.Fatalf("[ERROR] Reading post-dir: ", err)
 	}
 
-	for _, file := range files[:2] {
+	for _, file := range files {
 		posts = append(posts, readFile(file.Name()))
 	}
 	return posts

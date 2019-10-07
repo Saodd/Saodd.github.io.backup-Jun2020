@@ -1,4 +1,4 @@
-# v1.0.0
+# v1.1
 FROM golang:1.13.1 as build
 
 COPY . /go/src/saodd
