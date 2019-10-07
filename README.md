@@ -1,4 +1,6 @@
-## Lewin的个人博客
+# Lewin的个人博客
+
+[![pipeline status](https://gitlab.com/saodd/Saodd-github-io/badges/master/pipeline.svg)](https://gitlab.com/saodd/Saodd-github-io/commits/master)
 
 Jekyll模板使用了[xukimseven](https://github.com/xukimseven/HardCandy-Jekyll)的项目，
 并根据自身需要做了相应调整。

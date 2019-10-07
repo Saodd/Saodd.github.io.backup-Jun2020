@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Docker数据卷Volume的备份，迁移，恢复"
-date:   2019-06-21 00:00:00 +0800
+date:   2019-06-21
 tags: Docker 
 color: rgb(102,204,255)
 subtitle: "有待完善"
