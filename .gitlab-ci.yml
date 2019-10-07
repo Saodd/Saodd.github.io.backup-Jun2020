@@ -9,6 +9,7 @@ stages:
 build_register:
   stage: build
   script:
+    - docker login registry.gitlab.com -u lewin -p $GITLAB_TOKEN
     - cd register
     - docker build -t registry.gitlab.com/saodd/saodd-github-io/register:v1.0 .
     - docker push registry.gitlab.com/saodd/saodd-github-io/register:v1.0
