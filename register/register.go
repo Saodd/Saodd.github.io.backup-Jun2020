@@ -43,7 +43,7 @@ func readDir() []*postMeta {
 	var posts = []*postMeta{}
 	files, err := ioutil.ReadDir(PostPath)
 	if err != nil {
-		log.Fatalf("[ERROR] Reading post-dir: ", err)
+		log.Fatalf("[ERROR] Reading post-dir: %s", err)
 	}
 
 	for _, file := range files {
@@ -74,9 +74,9 @@ func readFile(name string) *postMeta {
 			continue
 		case 't':
 			if line[1] == 'i' { // title
-				cut := bytes.Index(line, []byte{' '})
+				cut := bytes.IndexByte(line, ' ')
 				title := string(line[cut:])
-				post.Title = strings.Trim(title, "\"")
+				post.Title = strings.Trim(title, " \"")
 			} else if line[1] == 'a' { // title
 				tags := strings.Split(string(line), " ")
 				post.Tags = tags[1:]
