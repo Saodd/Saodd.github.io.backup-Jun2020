@@ -74,8 +74,8 @@ func readFile(name string) *postMeta {
 			continue
 		case 't':
 			if line[1] == 'i' { // title
-				s := bytes.Split(line, []byte{' '})
-				title := string(s[len(s)-1])
+				cut := bytes.Index(line, []byte{' '})
+				title := string(line[cut:])
 				post.Title = strings.Trim(title, "\"")
 			} else if line[1] == 'a' { // title
 				tags := strings.Split(string(line), " ")
@@ -91,7 +91,7 @@ func readFile(name string) *postMeta {
 				}
 			}
 		case '>':
-			post.Brev += string(line)
+			post.Brev += ("\n" + string(line))
 		}
 	}
 	return post
