@@ -17,6 +17,8 @@ import (
 
 const PostPath = "/usr/share/nginx/html/static/posts"
 
+//const PostPath = "../_posts"  // dev environment
+
 type postMeta struct {
 	FileName string
 	Title    string
@@ -78,7 +80,7 @@ func readFile(name string) *postMeta {
 				title := string(line[cut:])
 				post.Title = strings.Trim(title, " \"")
 			} else if line[1] == 'a' { // title
-				tags := strings.Split(string(line), " ")
+				tags := strings.Split(strings.TrimSpace(string(line)), " ")
 				post.Tags = tags[1:]
 			}
 		case 'd':
