@@ -26,8 +26,8 @@ color: rgb(51,204,255)
 
 最简单的形式就是直接实例化一个容器。
 
-```bash
-    $ docker run --name some-mongo -d mongo:tag
+```shell-session
+$ docker run --name some-mongo -d mongo:tag
 ```
 
 其中：
@@ -70,7 +70,7 @@ services:
 
 运行docker命令启动这项`stack`并命名为*mongodb*
 
-```shell
+```shell-session
 $ docker stack deploy -c stack.yml mongodb
 Ignoring unsupported options: restart
 Creating network mongodb_default
@@ -80,7 +80,7 @@ Creating service mongodb_mongo
 
 查看已经创建的`stack`：
 
-```rst
+```shell-session
 $ docker stack ls
 NAME                SERVICES            ORCHESTRATOR
 mongodb             2                   Swarm
@@ -91,7 +91,6 @@ nudil678wgt9        mongodb_mongo           replicated          1/1             
 gpcfkym0rter        mongodb_mongo-express   replicated          1/1                 mongo-express:latest   *:8081->8081/tcp
 
 $ docker container ls
-PS C:\Users\lewin\mycode\APMOS\deploy\build_db> docker container ls
 CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS               NAMES
 d2cec79f67e2        mongo-express:latest   "tini -- /docker-ent…"   18 minutes ago      Up 18 minutes       8081/tcp            mongodb_mongo-express.1.utv18p6if1pqdjs6ab93gbldl
 029472c4445c        mongo:latest           "docker-entrypoint.s…"   18 minutes ago      Up 18 minutes       27017/tcp           mongodb_mongo.1.pdjv597fnm2l8hkvp7q26amng

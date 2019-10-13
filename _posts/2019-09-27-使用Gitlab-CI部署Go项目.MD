@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "实战项目：使用Gitlab-CI部署Go项目1"
+title:  "实战项目：使用Gitlab-CI部署Go项目"
 date:   2019-09-27
 tags: DevOps Golang
 color: rgb(255,204,51)
@@ -137,7 +137,7 @@ func Test_ApRedisOptions(t *testing.T) {
 
 注意在上述所需的两个依赖库中，`cron`是使用了Modules功能，而`redis`还没有，所以二者的命令会有区别。
 
-```shell
+```shell-session
 $ go mod init gitlab.apcapital.local/lewin/apmogo
 go: creating new go.mod: module gitlab.apcapital.local/lewin/apmogo
 
@@ -159,7 +159,7 @@ require (
 
 这样依赖管理就设置好了。然后我们运行测试看一下：
 
-```shell
+```shell-session
 $ go test -cover ./...
 ok      gitlab.apcapital.local/lewin/apmogo/build/cron  0.498s  coverage: 35.7% of statements
 ok      gitlab.apcapital.local/lewin/apmogo/utils/apdb  0.781s  coverage: 100.0% of statements
@@ -173,7 +173,7 @@ ok      gitlab.apcapital.local/lewin/apmogo/utils/apdb  0.781s  coverage: 100.0%
 
 不过最后误打误撞，发现我所需要的功能其实已经在`go test`中实现了。我们看一下如何操作：
 
-```shell
+```shell-session
 $ go test -coverprofile=coverage.out ./...
 ok      gitlab.apcapital.local/lewin/apmogo/build/cron  0.455s  coverage: 35.7% of statements
 ok      gitlab.apcapital.local/lewin/apmogo/utils/apdb  0.847s  coverage: 100.0% of statements
