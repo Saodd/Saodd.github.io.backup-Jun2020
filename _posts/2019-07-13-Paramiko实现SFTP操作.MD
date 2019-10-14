@@ -65,7 +65,7 @@ def doGET(today: datetime, sftp: paramiko.SFTPClient):
 
 > `logger`对象是我之前写的`logging`模块的一个简单类`Logger_Easy_Time`，
 > 我这个模块投入了大量心血，并构建了很多测试，相当好用，详情请点击或搜索：
-> [Saodd/LewinTools](https://github.com/Saodd/LewinTools/blob/master/lewintools/base/logging.py#L242)
+> [Saodd/LewinTools](https://github.com/Saodd/LewinTools/blob/master/lewintools/base/logging.py#L137)
 
 然后实现main部分：
 
@@ -93,3 +93,45 @@ if __name__ == "__main__":
 
 打个比方的话，python就像是王牌杀手，什么都会做，但是一群杀手很可能会乱哄哄的；
 golang就像是集团军，兄弟们分工协作组成一个更强大的集团。
+
+
+## 使用密钥登录（20191014更新）
+
+使用密钥证书总比写下明文密码好多了。
+
+我们首先生成ssh密钥，注意，`paramiko`默认支持的是`pem`格式的密钥，因此我们在生成的时候要添加参数
+([参考](https://gist.github.com/batok/2352501#gistcomment-2811353))：
+
+```shell-session
+$ ssh-keygen -m pem -t rsa -C "test"
+```
+
+然后我们把公钥放在服务器上（也就是在服务器上装个门），然后把私钥放在你需要访问文件的地方（带着钥匙）并通过`paramiko`来使用：
+
+```python
+def login() -> paramiko.SFTPClient:
+    key = paramiko.RSAKey.from_private_key_file("/ap/ApmosReconcile/utils/pk")
+
+    ts = paramiko.Transport(self.server)
+    ts.connect(username="lewin", pkey=key)
+
+    sftp = paramiko.SFTPClient.from_transport(ts)
+    return sftp
+```
+
+示例用法：
+
+```python
+@_limit_path
+def sftp_get(path: str, force=False) -> str:
+    """
+    原来：f = open("/some/file")
+    现在：f = open(sftp_get("/some/file"))
+    函数会帮你下载相应的文件到本地容器里。
+    """
+    if not os.path.exists(path) or force:
+        sftp = login()
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        sftp.get(path, path)
+    return path
+```
