@@ -59,12 +59,29 @@ PATH=/usr/local/bin:xxxxx:xxxxx:xxxxx
 
 ## 环境变量问题
 
-在Docker容器实例化时传入的environment参数，在cron中是无效的，导致报错『No module named 'xxx'』
+在Docker容器实例化时传入的`-e PYTHONPATH=xxx`参数，在cron中是无效的，进而导致报错『No module named 'xxx'』。
 
-### 解决办法
+### 解决办法1
 
-在crontab每行前面临时设置环境变量（虽然有点麻烦，不过暂时没有找到更好的办法）
+在crontab每行前面临时设置环境变量
 
 ```text
 * * * * * export PYTHONPATH=${PROJECT_PATH}; python some_python.py
+```
+
+### 解决办法2
+
+最好的办法，是在crontab最上方定义`PYTHONPATH`。语法类似`shell`，但是不支持变量给变量赋值，每个变量都要通过值来赋值。
+
+```text
+PROJECT_PATH='/srv/apmos/ApmosReconcile'
+PYTHONPATH='/srv/apmos/ApmosReconcile'
+
+* * * * * python some_python.py
+```
+
+下面的赋值方法是无效的：
+
+```text
+PYTHONPATH=${PROJECT_PATH}
 ```
