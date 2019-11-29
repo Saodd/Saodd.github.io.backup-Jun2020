@@ -2,7 +2,7 @@
 layout: post
 title:  "使用pymysql时提示没有mysqldb的解决办法"
 date:   2019-05-28
-tags: Python MysqlDB
+tags: DB
 color: rgb(255,204,51)
 subtitle: "报错: ModuleNotFoundError: No module named 'MySQLdb'"
 ---

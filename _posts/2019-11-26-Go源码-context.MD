@@ -116,7 +116,7 @@ func newCancelCtx(parent Context) cancelCtx {
 
 这个方法会将parent复制一份，返回一个新的`cancelCtx`对象（继承自parent）和它对应的`cancel`方法。如果调用这个cancel方法，就会将Done返回的chan关闭掉（会影响子孙，不影响父对象）。
 
-### 1.1 子类：cancelCtx
+### 1.1 类：cancelCtx
 
 ```go
 type cancelCtx struct {
@@ -216,8 +216,126 @@ func (c *cancelCtx) cancel(removeFromParent bool, err error) {
 
 ## 2. 方法二：WithTimeout
 
+它是`WithDeadline`的快捷方式：
+
+```go
+func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {
+	return WithDeadline(parent, time.Now().Add(timeout))
+}
+```
+
 ## 3. 方法三：WithDeadline
+
+顾名思义，设置一个死线，过了这个时间后自动触发Cancel。要注意的一个点是，想象一下，父对象最大时间1秒，而子对象最大时间3秒，会发生什么？也就是说，parent可能也有死线，这时候就要判定一下，以二者更早的那一个为准。
+
+```go
+func WithDeadline(parent Context, d time.Time) (Context, CancelFunc) {
+	if cur, ok := parent.Deadline(); ok && cur.Before(d) {
+		// The current deadline is already sooner than the new one.
+		return WithCancel(parent)
+	}
+	c := &timerCtx{
+		cancelCtx: newCancelCtx(parent),
+		deadline:  d,
+	}
+	propagateCancel(parent, c)
+	dur := time.Until(d)
+	if dur <= 0 {
+		c.cancel(true, DeadlineExceeded) // deadline has already passed
+		return c, func() { c.cancel(false, Canceled) }
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.err == nil {
+		c.timer = time.AfterFunc(dur, func() {
+			c.cancel(true, DeadlineExceeded)
+		})
+	}
+	return c, func() { c.cancel(true, Canceled) }
+}
+```
+
+这个函数做了这几件事：
+
+1. 判断parent是否有Deadline，如果有而且还比当前规定的还短，那就以parent为准。
+2. 以parent为模板，创建一个新的`timerCtx`对象。注意与前面的`cancelCtx`类是不同的，他们两个都是**类**，都是实现了`Context`**接口**的类。
+3. 把新对象注册到parent中去。
+4. 生成一个`time.Timer`来计时，到时间后执行cancel。
+
+### 3.1 类：timerCtx
+
+```go
+type timerCtx struct {
+	cancelCtx
+	timer *time.Timer // Under cancelCtx.mu.
+	deadline time.Time
+}
+```
+
+这个类与`cancelCtx`类并没有太大区别，多了两个时间相关的私有变量。相应地，它的`Cancel()`方法也有一些改变：
+
+```go
+func (c *timerCtx) cancel(removeFromParent bool, err error) {
+	c.cancelCtx.cancel(false, err)
+	if removeFromParent {
+		// Remove this timerCtx from its parent cancelCtx's children.
+		removeChild(c.cancelCtx.Context, c)
+	}
+	c.mu.Lock()
+	if c.timer != nil {
+		c.timer.Stop()
+		c.timer = nil
+	}
+	c.mu.Unlock()
+}
+```
+
+它的Cancel方法，首先调用`cancelCtx.Cancel()`，然后再把`Timer`也停止掉。
 
 ## 4. 方法四：WithValue
 
-（未完待续）
+也是顾名思义，给上下文环境附带一个Value（键值对）。设想一个典型的场景，比如某个HTTP请求，我们要打日志，是不是会考虑给这个请求做一个ID号以便后期追踪？这个ID号就可以放在这里面。
+
+意外的是，文档中强调：`key`最好不要用built-in的数据类型，以免不同的包之间产生冲突。用户应该自己定义一个类型来作为key。可以考虑`struct{}`，因为不需要分配内存。
+
+```go
+func WithValue(parent Context, key, val interface{}) Context {
+	if key == nil {
+		panic("nil key")
+	}
+	if !reflectlite.TypeOf(key).Comparable() {
+		panic("key is not comparable")
+	}
+	return &valueCtx{parent, key, val}
+}
+```
+
+### 4.1 类：valueCtx
+
+```go
+type valueCtx struct {
+	Context
+	key, val interface{}
+}
+```
+
+非常简单的类，仅仅增加了键值对。那么如何获取这个值？用这个：
+
+```go
+func (c *valueCtx) Value(key interface{}) interface{} {
+	if c.key == key {
+		return c.val
+	}
+	return c.Context.Value(key)
+}
+```
+
+一个细节要提醒的是，`struct{}{}==strct{}{}`是成立的。
+
+## 我的总结
+
+`context`包是一个相对较新的包，提供的是上下文的资源管理功能。设计目标是针对请求的资源管理。设计思路是建立一个树形的派生关系，通过管理上游节点来实现对所有下游子孙节点的统一管理。
+
+请求，既可以是作为服务端接收的请求，也可以是作为客户端发出的请求。这就是`net/http`包的功能了。
+
+到这里忽然想起来，`gin`框架中的请求处理函数，签名是`type HandlerFunc func(*Context)`，虽然这个`gin.Context`跟Go标准库中的`context.Context`是不同的东西，但是应该设计思路是类似的。等看完标准库，再去看看`gin`源码吧。

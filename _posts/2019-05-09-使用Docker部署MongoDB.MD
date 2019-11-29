@@ -2,7 +2,7 @@
 layout: post
 title:  "使用Docker部署MongoDB"
 date:   2019-05-09
-tags: Docker MongoDB
+tags: Docker DB
 color: rgb(51,204,255)
 ---
 

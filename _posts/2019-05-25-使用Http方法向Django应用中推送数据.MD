@@ -2,7 +2,7 @@
 layout: post
 title:  "使用Http的POST方法向Django应用中推送数据"
 date:   2019-05-25
-tags: Django
+tags: Python
 color: rgb(0,51,0)
 ---
 
