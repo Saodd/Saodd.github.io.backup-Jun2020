@@ -21,7 +21,7 @@ color: rgb(255,0,0)
 
 ## Demo 示例
 
-拷贝自[MojoTech的博客](https://mojotv.cn/2018/12/26/what-is-context-in-go):
+代码拷贝自[MojoTech的博客](https://mojotv.cn/2018/12/26/what-is-context-in-go):
 
 ```go
 func someHandler() {
