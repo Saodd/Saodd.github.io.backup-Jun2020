@@ -15,9 +15,9 @@ Redis的go语言客户端并不算多。Github上千星的只有两个：
 - [go-redis/go-redis](https://github.com/go-redis/redis)
 - [gomodule/redigo](https://github.com/gomodule/redigo)
 
-所以基本上只能在他们之间二选一。
+所以基本上只在他们之间二选一。
 
-> 另外值得一提的是，还有一个10K-star的项目[CodisLabs/codis](https://github.com/CodisLabs/codis)是[豌豆荚](wandoujia.com)开源的，用Go实现的Redis。虽然星星很多，我也没有仔细看，但是粗略感觉这个思路不太好。
+> 另外值得一提的是，还有一个10K-star的项目[CodisLabs/codis](https://github.com/CodisLabs/codis)是[豌豆荚](wandoujia.com)开源的，用Go实现的Redis数据库（不是客户端）。虽然星星很多，我也没有仔细看，但是粗略感觉这个思路似乎不太好？对于这种极致性能的应用，我猜还是C语言比go更靠谱一些。
 
 ## 非功能特性对比
 
@@ -87,6 +87,12 @@ type Client struct {
 
 如果要使用连接池模式，要使用`NewPool`方法。注意，这个方法被标记为**Deprecated**，在源码中可以看到各种蛋疼的东西，并发逻辑比较复杂，大致看上去感觉非常Errprone。但与此同时并没有其他的连接池对象可用了。连接池中，所有连接放在一个`idleList`里，组织形式是链表，从头部取出，用完后放回尾部。
 
-每个底层`Client`连接都是通过`Dail`函数创建的，先封装在一个`poolConn`中，这个对象保存了创建时间用于控制连接的最大生存时间，以及保存了在链表中的前后邻居的指针可以直接在前后插入。
+每个底层`Client`连接都是通过`Dial`函数创建的，先封装在一个`poolConn`中，这个对象保存了创建时间用于控制连接的最大生存时间，以及保存了在链表中的前后邻居的指针可以直接在前后插入。
 
 然后`poolConn`再封装进一个`activeConn`对象中，这个对象才是我们外部操作的对象。这个对象封装了一些操作接口，负责把应用功能传递到底层的连接中去执行。还有一个重要的`Close`方法，它是连接池与普通连接的最大区别，它不关闭底层的连接，而是将其放回池子里。
+
+## 主观感受与结论
+
+默认开启连接池模式的`go-redis`显然更加易用，各种接口函数设计得也相对合理。总体体验良好。
+
+不推荐使用`redigo`。
